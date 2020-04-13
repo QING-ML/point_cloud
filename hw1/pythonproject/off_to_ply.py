@@ -117,9 +117,9 @@ def write_ply_points_faces_from_off(ply_data_dir, off_data_dir):
 
 def main():
     # ply目标文件产生路径
-    ply_data_dir = '/home/rq/cloud_lesson/ModelNet40/ply_data_points'
+    ply_data_dir = '/home/zqq/C++ Training/point_cloud/hw1/pythonproject/ModelNet40_2/ply_data_points'
     # off文件所在路径
-    off_data_dir = '/home/rq/cloud_lesson/ModelNet40/off_data'
+    off_data_dir = '/home/zqq/C++ Training/point_cloud/hw1/pythonproject/ModelNet40_2/off_data'
     write_ply_points_only_from_off(ply_data_dir, off_data_dir)
 
 if __name__ == '__main__':
