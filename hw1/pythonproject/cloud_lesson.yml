@@ -6,51 +6,51 @@ dependencies:
   - ca-certificates=2019.11.28=hecc5488_0
   - certifi=2019.11.28=py36h9f0ad1d_1
   - cycler=0.10.0=py_2
-  - freetype=2.10.1=h8da9a1a_0
+  - freetype=2.10.1
   - joblib=0.14.1=py_0
-  - jpeg=9c=h1de35cc_1001
-  - kiwisolver=1.1.0=py36h863e41a_1
+  - jpeg
+  - kiwisolver=1.1.0
   - libblas=3.8.0=16_openblas
   - libcblas=3.8.0=16_openblas
   - libcxx=9.0.1=1
-  - libgfortran=4.0.0=2
+  - libgfortran
   - liblapack=3.8.0=16_openblas
-  - libopenblas=0.3.9=h3d69b6c_0
-  - libpng=1.6.37=hbbe82c9_1
-  - libtiff=4.1.0=h2ae36a8_6
-  - libwebp-base=1.1.0=h0b31af3_3
-  - llvm-openmp=9.0.1=h28b9765_2
-  - lz4-c=1.8.3=h6de7cb9_1001
+  - libopenblas=0.3.9
+  - libpng=1.6.37
+  - libtiff=4.1.0
+  - libwebp-base
+  - llvm-openmp=9.0.1
+  - lz4-c=1.8.3
   - matplotlib=3.2.1=0
-  - matplotlib-base=3.2.1=py36h83d3ec1_0
-  - numpy=1.18.1=py36hdc5ca10_1
+  - matplotlib-base=3.2.1
+  - numpy=1.18.1
   - olefile=0.46=py_0
-  - openssl=1.1.1f=h0b31af3_0
-  - pandas=1.0.3=py36hcc1bba6_0
-  - pillow=7.0.0=py36h2ae5dfa_1
+  - openssl=1.1.1f
+  - pandas=1.0.3
+  - pillow=7.0.0
   - pyntcloud=0.1.2=py_0
   - pyparsing=2.4.6=py_0
   - python-dateutil=2.8.1=py_0
   - python_abi=3.6=1_cp36m
   - pytz=2019.3=py_0
-  - scikit-learn=0.22.2.post1=py36h3dc85bc_0
-  - scipy=1.4.1=py36h1dac7e4_2
+  - scikit-learn=0.22.2.post1
+  - scipy=1.4.1
   - six=1.14.0=py_1
-  - tk=8.6.10=hbbe82c9_0
-  - tornado=6.0.4=py36h37b9a7d_1
-  - zstd=1.4.4=hed8d7c8_2
-  - libcxxabi=4.0.1=hcfea43d_1
-  - libedit=3.1.20181209=hb402a30_0
-  - libffi=3.2.1=h475c297_4
-  - ncurses=6.2=h0a44026_0
+  - tk=8.6.10
+  - tornado=6.0.4
+  - zstd=1.4.4
+  - libcxxabi
+  - libedit=3.1.20181209
+  - libffi=3.2.1
+  - ncurses=6.2
   - pip=20.0.2=py36_1
-  - python=3.6.10=hc70fcce_1
-  - readline=8.0=h1de35cc_0
+  - python=3.6.10
+  - readline=8.0
   - setuptools=46.1.1=py36_0
-  - sqlite=3.31.1=ha441bb4_0
+  - sqlite=3.31.1
   - wheel=0.34.2=py36_0
-  - xz=5.2.4=h1de35cc_4
-  - zlib=1.2.11=h1de35cc_3
+  - xz=5.2.4
+  - zlib=1.2.11
   - pip:
     - appnope==0.1.0
     - attrs==19.3.0
@@ -103,4 +103,4 @@ dependencies:
     - webencodings==0.5.1
     - widgetsnbextension==3.5.1
     - zipp==3.1.0
-prefix: /Users/renqian/anaconda3/envs/cloud_lesson
+
