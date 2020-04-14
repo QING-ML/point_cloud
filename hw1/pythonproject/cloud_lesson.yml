@@ -51,6 +51,7 @@ dependencies:
   - wheel=0.34.2=py36_0
   - xz=5.2.4
   - zlib=1.2.11
+  - plyfile
   - pip:
     - appnope==0.1.0
     - attrs==19.3.0

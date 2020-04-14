@@ -16,7 +16,9 @@ from pyntcloud import PyntCloud
 def PCA(data, correlation=False, sort=True):
     # 作业1
     # 屏蔽开始
-
+    if not correlation:
+        print(data.to_numpy().shape)
+        eigenvalues, eigenvectors = np.linalg.eig(np.cov(data.to_numpy().T))
 
     # 屏蔽结束
 
@@ -36,7 +38,7 @@ def main():
     # filename = os.path.join(root_dir, cat[cat_index],'train', cat[cat_index]+'_0001.ply') # 默认使用第一个点云
 
     # 加载原始点云
-    point_cloud_pynt = PyntCloud.from_file("/Users/renqian/Downloads/program/cloud_data/11.ply")
+    point_cloud_pynt = PyntCloud.from_file("/home/zqq/C++ Training/point_cloud/hw1/pythonproject/ModelNet40_2/ply_data_points/chair/train/chair_0001.ply")
     point_cloud_o3d = point_cloud_pynt.to_instance("open3d", mesh=False)
     # o3d.visualization.draw_geometries([point_cloud_o3d]) # 显示原始点云
 
@@ -45,13 +47,30 @@ def main():
     print('total points number is:', points.shape[0])
 
     # 用PCA分析点云主方向
-    w, v = PCA(points)
-    point_cloud_vector = v[:, 2] #点云主方向对应的向量
-    print('the main orientation of this pointcloud is: ', point_cloud_vector)
+    #w, v = PCA(points)
+    #point_cloud_vector = v[:, 2] #点云主方向对应的向量
+    #print('the main orientation of this pointcloud is: ', point_cloud_vector)
     # TODO: 此处只显示了点云，还没有显示PCA
-    # o3d.visualization.draw_geometries([point_cloud_o3d])
+    # points_pca = np.append([
+    #     [0,0,0]],
+    #     [100*point_cloud_vector],
+    #     axis=0
+    # )
+    # print(points_pca.shape)
+    # lines_pca = [
+    #     [0,1],
+    # ]
+    # colors = [[1,0,0]]
+    # line_set_pca = o3d.geometry.LineSet(
+    #     points = o3d.utility.Vector3dVector(points_pca),
+    #     lines = o3d.utility.Vector2iVector(lines_pca),
+    # )
+    # line_set_pca.colors = o3d.utility.Vector3dVector(colors)
+    # o3d.visualization.draw_geometries([point_cloud_o3d, line_set_pca])
+    #o3d.visualization.draw_geometries([point_cloud_o3d])
     
     # 循环计算每个点的法向量
+    #p51 in ppt
     pcd_tree = o3d.geometry.KDTreeFlann(point_cloud_o3d)
     normals = []
     # 作业2
