@@ -25,7 +25,9 @@ def PCA(data, correlation=False, sort=True):
 
     if sort:
         sort = eigenvalues.argsort()[::-1]
+        print(eigenvalues.argsort())
         eigenvalues = eigenvalues[sort]
+        print(eigenvalues)
         eigenvectors = eigenvectors[:, sort]
 
     return eigenvalues, eigenvectors
@@ -49,7 +51,7 @@ def main():
 
     # 用PCA分析点云主方向
     w, v = PCA(points)
-    point_cloud_vector = v[:, 2] #点云主方向对应的向量
+    point_cloud_vector = v[:, 0] #点云主方向对应的向量
     print('the main orientation of this pointcloud is: ', point_cloud_vector)
     points_mean = np.mean(points, axis=0)
     print(points.shape)
@@ -78,7 +80,7 @@ def main():
     #o3d.visualization.draw_geometries([point_cloud_o3d])
     
     # 循环计算每个点的法向量
-    #p51 in ppt
+    #p51 in ppt peseudocode
     pcd_tree = o3d.geometry.KDTreeFlann(point_cloud_o3d)
     normals = []
     # 作业2
@@ -88,7 +90,7 @@ def main():
 
         [k, idx, _] = pcd_tree.search_knn_vector_3d(point_i, 20)
         w, v = PCA(np.asarray(point_cloud_o3d.points)[idx[0:], :])
-        normal = v[:,0].T # normal
+        normal = v[:,2].T # normal
         normals.append(normal)
     # 由于最近邻搜索是第二章的内容，所以此处允许直接调用open3d中的函数
 
