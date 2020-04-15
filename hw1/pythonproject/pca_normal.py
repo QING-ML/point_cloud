@@ -17,8 +17,9 @@ def PCA(data, correlation=False, sort=True):
     # 作业1
     # 屏蔽开始
     if not correlation:
-        print(data.to_numpy().shape)
-        eigenvalues, eigenvectors = np.linalg.eig(np.cov(data.to_numpy().T))
+        #print(data.to_numpy().shape)
+        #eigenvalues, eigenvectors = np.linalg.eig(np.cov(data.to_numpy().T))
+        eigenvalues, eigenvectors = np.linalg.eig(np.cov(data.T))
 
     # 屏蔽结束
 
@@ -47,26 +48,33 @@ def main():
     print('total points number is:', points.shape[0])
 
     # 用PCA分析点云主方向
-    #w, v = PCA(points)
-    #point_cloud_vector = v[:, 2] #点云主方向对应的向量
-    #print('the main orientation of this pointcloud is: ', point_cloud_vector)
+    w, v = PCA(points)
+    point_cloud_vector = v[:, 2] #点云主方向对应的向量
+    print('the main orientation of this pointcloud is: ', point_cloud_vector)
+    points_mean = np.mean(points, axis=0)
+    print(points.shape)
+    print(points_mean.shape)
+    p_start = np.array([0,0,0]) + points_mean
+    p_end = point_cloud_vector + points_mean
     # TODO: 此处只显示了点云，还没有显示PCA
-    # points_pca = np.append([
-    #     [0,0,0]],
-    #     [100*point_cloud_vector],
-    #     axis=0
-    # )
-    # print(points_pca.shape)
-    # lines_pca = [
-    #     [0,1],
-    # ]
-    # colors = [[1,0,0]]
-    # line_set_pca = o3d.geometry.LineSet(
-    #     points = o3d.utility.Vector3dVector(points_pca),
-    #     lines = o3d.utility.Vector2iVector(lines_pca),
-    # )
-    # line_set_pca.colors = o3d.utility.Vector3dVector(colors)
-    # o3d.visualization.draw_geometries([point_cloud_o3d, line_set_pca])
+    points_pca = np.append([
+        p_start],
+        [p_end],
+        axis=0
+    )
+    print(points_pca.shape)
+    lines_pca = [
+        [0,1],
+    ]
+    colors = [[1,0,0]]
+    line_set_pca = o3d.geometry.LineSet(
+        points = o3d.utility.Vector3dVector(points_pca),
+        lines = o3d.utility.Vector2iVector(lines_pca),
+    )
+    line_set_pca.colors = o3d.utility.Vector3dVector(colors)
+    line_set_pca.scale(100)
+    #o3d.visualization.draw_geometries([point_cloud_o3d, line_set_pca])
+
     #o3d.visualization.draw_geometries([point_cloud_o3d])
     
     # 循环计算每个点的法向量
@@ -75,14 +83,22 @@ def main():
     normals = []
     # 作业2
     # 屏蔽开始
+    #find nearest points
+    for point_i in point_cloud_o3d.points:
 
+        [k, idx, _] = pcd_tree.search_knn_vector_3d(point_i, 20)
+        w, v = PCA(np.asarray(point_cloud_o3d.points)[idx[0:], :])
+        normal = v[:,0].T # normal
+        normals.append(normal)
     # 由于最近邻搜索是第二章的内容，所以此处允许直接调用open3d中的函数
 
     # 屏蔽结束
     normals = np.array(normals, dtype=np.float64)
+    print(normals.shape)
     # TODO: 此处把法向量存放在了normals中
     point_cloud_o3d.normals = o3d.utility.Vector3dVector(normals)
-    o3d.visualization.draw_geometries([point_cloud_o3d])
+    o3d.visualization.draw_geometries([point_cloud_o3d, line_set_pca])
+    #在界面中按n查看normal,+号放大normal
 
 
 if __name__ == '__main__':
