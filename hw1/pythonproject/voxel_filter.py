@@ -99,13 +99,13 @@ def main():
     point_cloud_pynt = PyntCloud.from_file(file_name)
 
     # 转成open3d能识别的格式
-    point_cloud_o3d = point_cloud_pynt.to_instance("open3d", mesh=False)
+    point_cloud_o3d = point_cloud_pynt.to_instance("open3d", mesh=True)
     # o3d.visualization.draw_geometries([point_cloud_o3d]) # 显示原始点云
 
     # 调用voxel滤波函数，实现滤波
     #points(2382,3)
     print(point_cloud_pynt.points.shape)
-    filtered_cloud = voxel_filter(point_cloud_pynt.points, 2.0)
+    filtered_cloud = voxel_filter(point_cloud_pynt.points, 5.0)
     point_cloud_o3d.points = o3d.utility.Vector3dVector(filtered_cloud)
     # 显示滤波后的点云
     o3d.visualization.draw_geometries([point_cloud_o3d])
