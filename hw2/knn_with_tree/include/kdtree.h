@@ -26,7 +26,10 @@ public:
 
 
 
-    void kdtree_recursive_build(Node* &root, pcl::PointCloud<pcl::PointXYZI>::Ptr const &cloud, std::vector<int> point_indices,
+    void kdtree_recursive_build(Node* &root, pcl::PointCloud<pcl::PointXYZI>::Ptr const &cloud, std::vector<int> &point_indices,
+                                int axis, int leaf_size);
+
+    void kdtree_recursive_build(Node* &root, std::vector<std::vector<double>> &cloud, std::vector<int> &point_indices,
                                 int axis, int leaf_size);
 
     inline int axis_round_robin(int axis){

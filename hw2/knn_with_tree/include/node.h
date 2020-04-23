@@ -5,7 +5,7 @@
 
 class Node{
 public:
-    Node(int axis, float value, std::vector<int> point_indices){
+    Node(int axis, float value, std::vector<int> &point_indices){
         this->axis = axis;
         this->value = value;
         this->point_indices = point_indices;

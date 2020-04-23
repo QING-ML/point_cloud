@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv){
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    if(pcl::io::loadPCDFile<pcl::PointXYZI>("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000003.pcd", *cloud)==-1){
+    if(pcl::io::loadPCDFile<pcl::PointXYZI>("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000000.pcd", *cloud)==-1){
         PCL_ERROR("could not load file");
         return -1;
     }
@@ -21,6 +21,19 @@ int main(int argc, char** argv){
                  <<"//"<<cloud->points[i].data[0]<<std::endl;
     }
 
+    std::vector<std::vector<double>> cloud_v;
+    //transform pcd to vector
+    for(auto i = 0; i < cloud->width; i++){
+        std::vector<double> point;
+        point.push_back(cloud->points[i].x);
+        point.push_back(cloud->points[i].y);
+        point.push_back(cloud->points[i].z);
+        cloud_v.push_back(point);
+
+    }
+
+
+
     int leaf_size = 32;
     float radius = 1 ;
     Kdtree kdtree(leaf_size);
@@ -29,15 +42,15 @@ int main(int argc, char** argv){
         point_indices.push_back(i);
     }
 
-    Node* root = NULL;
+    Node* root = nullptr;
 
 
     auto start_construct = std::chrono::system_clock::now();
-    kdtree.kdtree_recursive_build(root, cloud, std::move(point_indices), 0, leaf_size);
-
+    //kdtree.kdtree_recursive_build(root, cloud, point_indices, 0, leaf_size);
+    kdtree.kdtree_recursive_build(root, cloud_v,point_indices,0,leaf_size);
     auto end_construct = std::chrono::system_clock::now();
+    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_construct - start_construct);
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_construct - start_construct);
-    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
     std::cout<<"Time for kdtree construction is "<<double(duration.count())<<std::endl;
     if(root != NULL){
         root->debug_node();
