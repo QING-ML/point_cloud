@@ -1,6 +1,7 @@
 #include<iostream>
 #include<pcl/io/pcd_io.h>
 #include<pcl/point_types.h>
+#include"kdtree.h"
 
 int main(int argc, char** argv){
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
@@ -9,10 +10,56 @@ int main(int argc, char** argv){
         return -1;
     }
     std::cout<<"load"<<cloud->width<<","<<cloud->height<<"data points with the following fields:"<<std::endl;
-    for(auto i = 0; i < 2; i++){
-        std::cout<<""<<cloud->points[i].x
-                 <<""<<cloud->points[i].y
-                 <<""<<cloud->points[i].z;
+    for(auto i = 0; i < 1; i++){
+        std::cout<<"x: "<<cloud->points[i].x
+                 <<" y:  "<<cloud->points[i].y
+                 <<" z:"<<cloud->points[i].z
+                 <<"//"<<cloud->points[i].data[0]<<std::endl;
+        std::cout<<"x: "<<cloud->points[3961].x
+                 <<" y:  "<<cloud->points[3961].y
+                 <<" z:"<<cloud->points[3961].z
+                 <<"//"<<cloud->points[i].data[0]<<std::endl;
     }
-    return 0;
+
+    int leaf_size = 32;
+    float radius = 1 ;
+    Kdtree kdtree(leaf_size);
+    std::vector<int> point_indices;
+    for(int i = 0; i < cloud->width * cloud->height; i++){
+        point_indices.push_back(i);
+    }
+
+    Node* root = NULL;
+
+
+    auto start_construct = std::chrono::system_clock::now();
+    kdtree.kdtree_recursive_build(root, cloud, point_indices, 0, leaf_size);
+
+    auto end_construct = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
+    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
+    std::cout<<"Time for kdtree construction is "<<double(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den<<std::endl;
+    if(root != NULL){
+        root->debug_node();
+        std::cout<<"value of root: "<< root->axis<<std::endl;
+    }
+    else{
+        std::cout<<"No tree"<<std::endl;
+    }
+
+
+    RadiusNNResultSet ResultSet(radius);
+    std::vector<float> query={cloud->points[0].x,
+                             cloud->points[0].y,
+                             cloud->points[0].z};
+    std::cout<< "start search"<<std::endl;
+    auto start_search = std::chrono::system_clock::now();
+    kdtree.kdtree_radius_search(root, cloud, ResultSet,query);
+    auto end_search = std::chrono::system_clock::now();
+    auto duration_search = std::chrono::duration_cast<std::chrono::microseconds>(end_search - start_search);
+    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
+    std::cout<<"Time for kdtree search is "<<double(duration_search.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den<<std::endl;
+    std::cout<<"number of nearest points index : "<< ResultSet.dist_index_list[3].index
+            <<" ,distance: "<<ResultSet.dist_index_list[3].distance<<std::endl;
+
 }
