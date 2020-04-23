@@ -3,7 +3,7 @@ hw1/pythonproject/.idea
 hw2/lesson2code/*
 hw2/NN-Trees-master/*
 */*/build/*
-hw2/build-knn_with_tree-Desktop-Default/*
+hw2/build-knn_with_tree-Desktop-Debug/*
 hw2/velodyne
 hw2/knn_with_tree/CMakeLists.txt.user
 

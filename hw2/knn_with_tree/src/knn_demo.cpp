@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv){
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    if(pcl::io::loadPCDFile<pcl::PointXYZI>("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000000.pcd", *cloud)==-1){
+    if(pcl::io::loadPCDFile<pcl::PointXYZI>("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000003.pcd", *cloud)==-1){
         PCL_ERROR("could not load file");
         return -1;
     }
@@ -33,15 +33,15 @@ int main(int argc, char** argv){
 
 
     auto start_construct = std::chrono::system_clock::now();
-    kdtree.kdtree_recursive_build(root, cloud, point_indices, 0, leaf_size);
+    kdtree.kdtree_recursive_build(root, cloud, std::move(point_indices), 0, leaf_size);
 
     auto end_construct = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_construct - start_construct);
     //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
-    std::cout<<"Time for kdtree construction is "<<double(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den<<std::endl;
+    std::cout<<"Time for kdtree construction is "<<double(duration.count())<<std::endl;
     if(root != NULL){
         root->debug_node();
-        std::cout<<"value of root: "<< root->axis<<std::endl;
+        std::cout<<"axis of root: "<< root->axis<<std::endl;
     }
     else{
         std::cout<<"No tree"<<std::endl;
@@ -59,7 +59,11 @@ int main(int argc, char** argv){
     auto duration_search = std::chrono::duration_cast<std::chrono::microseconds>(end_search - start_search);
     //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_construct - start_construct);
     std::cout<<"Time for kdtree search is "<<double(duration_search.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den<<std::endl;
-    std::cout<<"number of nearest points index : "<< ResultSet.dist_index_list[3].index
-            <<" ,distance: "<<ResultSet.dist_index_list[3].distance<<std::endl;
+    std::cout<<"number of nearest points index : "<< ResultSet.dist_index_list.size()<<std::endl;
+
+    for(auto Distance_Index:ResultSet.dist_index_list){
+        std::cout<<"Index of nearest point: "<<Distance_Index.index
+                <<" ,distance to query point: : "<<Distance_Index.distance<<std::endl;
+    }
 
 }
