@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv){
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    if(pcl::io::loadPCDFile<pcl::PointXYZI>("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000000.pcd", *cloud)==-1){
+    if(pcl::io::loadPCDFile<pcl::PointXYZI>("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000002.pcd", *cloud)==-1){
         PCL_ERROR("could not load file");
         return -1;
     }
@@ -22,6 +22,7 @@ int main(int argc, char** argv){
     }
 
     std::vector<std::vector<double>> cloud_v;
+
     //transform pcd to vector
     for(auto i = 0; i < cloud->width; i++){
         std::vector<double> point;
@@ -33,7 +34,7 @@ int main(int argc, char** argv){
     }
 
 
-
+    //parameter
     int leaf_size = 32;
     float radius = 1 ;
     Kdtree kdtree(leaf_size);
@@ -42,6 +43,7 @@ int main(int argc, char** argv){
         point_indices.push_back(i);
     }
 
+    //initialize root
     Node* root = nullptr;
 
 

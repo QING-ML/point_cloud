@@ -61,10 +61,9 @@ void Kdtree::kdtree_recursive_build(Node *&root,  std::vector<std::vector<double
         //root->debug_node();
         //std::cout<<"after creat new root : "<<std::endl;
         //root = new Node(axis, 0.0 ,point_indices);
-        if(point_indices.size() < leaf_size){
+        if(point_indices.size() > leaf_size){
 
-            return;
-        }
+
 
         //sort_key_by_value(cloud, point_indices, axis);
 
@@ -75,11 +74,11 @@ void Kdtree::kdtree_recursive_build(Node *&root,  std::vector<std::vector<double
 
 
 
-        int middle_left_idx = ceil(point_indices.size()/2.0) - 1;
+        size_t middle_left_idx = ceil(point_indices.size()/2.0) - 1;
         int &middle_left_point_idx = point_indices[middle_left_idx];
         double &middle_left_point_value = cloud[middle_left_point_idx][axis];
 
-        int middle_right_idx = middle_left_idx + 1;
+        size_t middle_right_idx = middle_left_idx + 1;
         int &middle_right_point_idx = point_indices[middle_right_idx];
         double &middle_right_point_value = cloud[middle_right_point_idx][axis];
         root->value = (middle_left_point_value + middle_right_point_value) * 0.5;
@@ -89,6 +88,9 @@ void Kdtree::kdtree_recursive_build(Node *&root,  std::vector<std::vector<double
         kdtree_recursive_build(root->left, cloud, point_indices_left, axis_round_robin(axis),leaf_size);
         std::vector<int> point_indices_right(std::vector<int>(point_indices.begin()+middle_right_idx, point_indices.end()));
         kdtree_recursive_build(root->right, cloud, point_indices_right, axis_round_robin(axis),leaf_size);
+
+
+        }
 
 }
 
