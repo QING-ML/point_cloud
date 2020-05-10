@@ -7,11 +7,12 @@ import numpy as np
 import os
 import struct
 from sklearn import cluster, datasets, mixture, neighbors
+from scipy import spatial
 from itertools import cycle, islice
 import matplotlib.pyplot as plt
 import open3d as o3d
 import sys
-sys.setrecursionlimit(100000) #提高递归层数上限
+sys.setrecursionlimit(20000) #提高递归层数上限
 from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -122,10 +123,12 @@ def clustering(data):
     #DBSCAN
     #noise 编号为0
     n_class = 0
-    r = 0.1
-    min_samples = 35
+    r = 0.4
+    min_samples = 90
     idx = np.arange(data.shape[0])
     #nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
+    print("data[idx] :", data[idx].shape)
+    KDtree = spatial.cKDTree(data[idx])
     result = np.zeros(data.shape[0])
 
     def DFS(point_idx, neighbor_indices, data, n_class, min_samples, result, r):
@@ -148,9 +151,11 @@ def clustering(data):
         for neighbor_idx in neighbor_indices:
             if(np.argwhere(idx == neighbor_idx)):
                 # print("neighbor_idx shape", neighbor_idx
-                nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
-                distances, indices = nbrs.radius_neighbors(data[[neighbor_idx]])
-                new_neigh_indices = indices[0][indices[0][:] != neighbor_idx]
+                #nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
+                #distances, indices = nbrs.radius_neighbors(data[[neighbor_idx]],)
+                indices = np.asarray(KDtree.query_ball_point(data[[neighbor_idx]],r=r)[0])
+                #new_neigh_indices = indices[0][indices[0][:] != neighbor_idx]
+                new_neigh_indices = indices[indices[:] != neighbor_idx]
                 #print("new_neigh_indices shape: ", new_neigh_indices.shape)
                 expand_indices = []
                 for expand_idx in new_neigh_indices:
@@ -164,14 +169,18 @@ def clustering(data):
         #print("idx number is :",idx.shape)
         start_idx = np.random.choice(idx, 1)
         #print("start_idx", start_idx)
-        nbrs = neighbors.NearestNeighbors(radius = r, algorithm= 'kd_tree').fit(data[idx])
+        #nbrs = neighbors.NearestNeighbors(radius = r, algorithm= 'kd_tree').fit(data[idx])
         #print("start_ idx shape :", start_idx.shape)
-        distances, indices =nbrs.radius_neighbors(data[start_idx])
-        #print("distance:",  distances)
-        #print("indices:" , indices[0].shape)
 
-        if indices[0].shape[0] - 1 < min_samples:
-            print("noise point")
+        #找最临近点
+        #distances, indices =nbrs.radius_neighbors(data[start_idx])
+        indices = np.asarray(KDtree.query_ball_point(data[start_idx], r=r)[0])
+        #rint("distance:",  distances)
+        print("indices:" , indices.shape)
+
+        #if indices[0].shape[0] - 1 < min_samples:
+        if indices.shape[0] - 1 < min_samples:
+            #print("noise point")
             result[start_idx] = 0;
             dele_idx = np.argwhere(idx == start_idx)
             dele_idx = np.reshape(dele_idx, 1)
@@ -181,7 +190,8 @@ def clustering(data):
         else:
             n_class = n_class + 1
             print("n_class: ", n_class)
-            neigh_indices = indices[0][indices[0][:] != start_idx]
+            #neigh_indices = indices[0][indices[0][:] != start_idx]
+            neigh_indices = indices[indices[:] != start_idx]
             print("neigh_indices shape:", neigh_indices.shape)
             DFS(start_idx, neigh_indices, data, n_class, min_samples, result, r)
 
@@ -241,10 +251,11 @@ def plot_clusters_03d(non_ground_indices,segment_points,cluster_index, pcd, n_cl
 
     print(n_class)
     Num = int(n_class + 1)
-    colors = np.array(list(islice(cycle([[55, 126, 184], [255, 127, 0], [77, 175, 74],
-                                             [247, 129, 191], [166, 86, 40], [152, 78, 163],
-                                             [153, 153, 153], [228, 26, 28], [222, 222, 0]]),
+    colors = np.array(list(islice(cycle([np.true_divide([55, 126, 184],255), np.true_divide([255, 127, 0],255), np.true_divide([77, 175, 74],255),
+                                             np.true_divide([247, 129, 191],255), np.true_divide([166, 86, 40],255), np.true_divide([152, 78, 163],255),
+                                             np.true_divide([153, 153, 153],255), np.true_divide([228, 26, 28],255), np.true_divide([222, 222, 0],255)]),
                                       int(max(cluster_index) + 1))))
+
 
     print("color shape: ", colors.shape)
     class_indicies_list = []
@@ -304,11 +315,10 @@ def plot_cluster_from_load_file():
     n_class =  np.amax(cluster_index, axis=0)
     print(n_class)
     Num = int(n_class + 1)
-    colors = np.array(list(islice(cycle([[55, 126, 184], [255, 127, 0], [77, 175, 74],
-                                             [247, 129, 191], [166, 86, 40], [152, 78, 163],
-                                             [153, 153, 153], [228, 26, 28], [222, 222, 0]]),
+    colors = np.array(list(islice(cycle([np.true_divide([55, 126, 184],255), np.true_divide([255, 127, 0],255), np.true_divide([77, 175, 74],255),
+                                             np.true_divide([247, 129, 191],255), np.true_divide([166, 86, 40],255), np.true_divide([152, 78, 163],255),
+                                             np.true_divide([153, 153, 153],255), np.true_divide([228, 26, 28],255), np.true_divide([222, 222, 0],255)]),
                                       int(max(cluster_index) + 1))))
-    colors = np.random.rand(Num, 3)
 
     print("color shape: ", colors.shape)
     class_indicies_list = []
@@ -327,5 +337,5 @@ def plot_cluster_from_load_file():
 
 
 if __name__ == '__main__':
-    main2()
-    #plot_cluster_from_load_file()
+    #main2()
+    plot_cluster_from_load_file()
