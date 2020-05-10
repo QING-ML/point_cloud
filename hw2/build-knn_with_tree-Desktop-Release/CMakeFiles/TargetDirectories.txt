@@ -1,4 +1,0 @@
-/home/zqq/C++ Training/point_cloud/hw2/build-knn_with_tree-Desktop-Release/CMakeFiles/rebuild_cache.dir
-/home/zqq/C++ Training/point_cloud/hw2/build-knn_with_tree-Desktop-Release/CMakeFiles/edit_cache.dir
-/home/zqq/C++ Training/point_cloud/hw2/build-knn_with_tree-Desktop-Release/CMakeFiles/knn.dir
-/home/zqq/C++ Training/point_cloud/hw2/build-knn_with_tree-Desktop-Release/CMakeFiles/knn_with_tree.dir
