@@ -40,7 +40,7 @@ def Ransac(z_filter_arr_idx,data):
     p = 0.99
     N = int(np.ceil(np.log(1-p)/np.log(1-np.power((1-e),s))))
     print('N:', N)
-    tau = 0.2
+    tau = 0.1
 
     model = np.zeros((3,3))
     n_inline = 0
@@ -120,8 +120,8 @@ def clustering(data):
     #DBSCAN
     #noise 编号为0
     n_class = 0
-    r = 0.2
-    min_samples = 5
+    r = 0.5
+    min_samples = 15
 
     idx = np.arange(data.shape[0])
     result = np.zeros(data.shape[0])
@@ -233,18 +233,22 @@ def calibrarion_test(data):
 
 def plot_clusters_03d(non_ground_indices,segment_points,cluster_index, pcd, n_class):
 
-    colors = np.random.random((n_class+1, 3))
+    print(n_class)
+    Num = int(n_class + 1)
+    colors = np.random.rand(Num, 3)
 
     print("color shape: ", colors.shape)
     class_indicies_list = []
-    for n in range(0, n_class+1):
-        class_indicies = np.argwhere(cluster_index, n)
+    for n in range(0, Num):
+        class_indicies = np.argwhere(cluster_index == n)
         print("class_indicies", class_indicies.shape)
 
         pts_idx_list = []
         for idx in class_indicies:
             pts_idx_list.append(non_ground_indices[idx])
+        pts_idx_list = np.reshape(pts_idx_list,(np.asarray(pts_idx_list).shape[0],)).astype(int)
 
+        print("pts_idx_list shape : ",pts_idx_list)
         np.asarray(pcd.colors)[pts_idx_list[:], :] = colors[n]
     o3d.visualization.draw_geometries([pcd])
 
@@ -271,18 +275,44 @@ def main2():
 
     #clustering
     segmented_points, non_ground_indices = ground_segmentation(data=origin_points)
-    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/segmented_points_20.txt', segmented_points)
-    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/non_ground_indicess_20.txt', non_ground_indices)
+    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/experiment_data/segmented_points_20.txt', segmented_points)
+    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/experiment_data/non_ground_indicess_20.txt', non_ground_indices)
     cluster_index, n_class = clustering(segmented_points)
-    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/cluster_index.txt', cluster_index)
-    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/n_class.txt', [n_class])
+    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/experiment_data/cluster_index.txt', cluster_index)
+    np.savetxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/experiment_data/n_class.txt', [n_class])
     plot_clusters_03d(non_ground_indices, segmented_points, cluster_index, pcd, n_class)
 
 def plot_cluster_from_load_file():
-    
+    pcd = o3d.io.read_point_cloud("/home/zqq/C++ Training/point_cloud/hw2/velodyne/pcd/0000000020.pcd")
+    pcd.paint_uniform_color([0.0, 0.0, 1.0])
+    segmented_points = np.loadtxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/segmented_points_20.txt')
+    print("segmented_points: ", segmented_points.shape)
+    non_ground_indices = np.loadtxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/non_ground_indicess_20.txt')
+    print('non_ground_indices: ', non_ground_indices.shape)
+    cluster_index = np.loadtxt('/home/zqq/C++ Training/point_cloud/hw4/model_fitting/cluster_index.txt')
+    print('cluster_index', cluster_index.shape)
 
+    n_class =  np.amax(cluster_index, axis=0)
+    print(n_class)
+    Num = int(n_class + 1)
+    colors = np.random.rand(Num, 3)
+
+    print("color shape: ", colors.shape)
+    class_indicies_list = []
+    for n in range(0, Num):
+        class_indicies = np.argwhere(cluster_index == n)
+        print("class_indicies", class_indicies.shape)
+
+        pts_idx_list = []
+        for idx in class_indicies:
+            pts_idx_list.append(non_ground_indices[idx])
+        pts_idx_list = np.reshape(pts_idx_list,(np.asarray(pts_idx_list).shape[0],)).astype(int)
+
+        print("pts_idx_list shape : ",pts_idx_list)
+        np.asarray(pcd.colors)[pts_idx_list[:], :] = colors[n]
+    o3d.visualization.draw_geometries([pcd])
 
 
 if __name__ == '__main__':
     #main2()
-    plot_cluster_from_load_file()
+    #plot_cluster_from_load_file()
