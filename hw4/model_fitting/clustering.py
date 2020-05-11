@@ -12,7 +12,7 @@ from itertools import cycle, islice
 import matplotlib.pyplot as plt
 import open3d as o3d
 import sys
-sys.setrecursionlimit(20000) #提高递归层数上限
+sys.setrecursionlimit(100000) #提高递归层数上限
 from mpl_toolkits.mplot3d import Axes3D
 
 
@@ -88,7 +88,7 @@ def ground_segmentation(data):
     print(data.shape)
     data_idx = np.arange(data.shape[0])
     print("data index :", data_idx.shape)
-    z_filter_arr_idx =  data_idx[data[:,2] < -1.55]
+    z_filter_arr_idx =  data_idx[data[:,2] < -1.48]
     print('z filtered data: ',z_filter_arr_idx.shape)
     print("data_2 shape :", data.shape)
     ground_idx = Ransac(z_filter_arr_idx,data)
@@ -123,17 +123,19 @@ def clustering(data):
     #DBSCAN
     #noise 编号为0
     n_class = 0
-    r = 0.4
-    min_samples = 90
+    r = 0.18
+    min_samples = 35
+    bound_samples = 20
     idx = np.arange(data.shape[0])
     #nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
     print("data[idx] :", data[idx].shape)
-    KDtree = spatial.cKDTree(data[idx])
     result = np.zeros(data.shape[0])
+    KDtree = spatial.cKDTree(data[idx],leafsize=8)
+
 
     def DFS(point_idx, neighbor_indices, data, n_class, min_samples, result, r):
         nonlocal idx
-        if (neighbor_indices.shape[0] < min_samples):
+        if (neighbor_indices.shape[0] < bound_samples):
             dele_idx = np.argwhere(idx == point_idx)
             dele_idx = np.reshape(dele_idx, 1)
             idx = np.delete(idx, dele_idx)
@@ -153,6 +155,7 @@ def clustering(data):
                 # print("neighbor_idx shape", neighbor_idx
                 #nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
                 #distances, indices = nbrs.radius_neighbors(data[[neighbor_idx]],)
+                #update kdtree
                 indices = np.asarray(KDtree.query_ball_point(data[[neighbor_idx]],r=r)[0])
                 #new_neigh_indices = indices[0][indices[0][:] != neighbor_idx]
                 new_neigh_indices = indices[indices[:] != neighbor_idx]
@@ -167,6 +170,7 @@ def clustering(data):
 
     while idx.shape[0]:
         #print("idx number is :",idx.shape)
+
         start_idx = np.random.choice(idx, 1)
         #print("start_idx", start_idx)
         #nbrs = neighbors.NearestNeighbors(radius = r, algorithm= 'kd_tree').fit(data[idx])
@@ -188,6 +192,7 @@ def clustering(data):
             idx = np.delete(idx, dele_idx)
             #print("idx shape after delete:", idx.shape)
         else:
+            #KDtree = spatial.cKDTree(data[idx])
             n_class = n_class + 1
             print("n_class: ", n_class)
             #neigh_indices = indices[0][indices[0][:] != start_idx]
@@ -316,8 +321,8 @@ def plot_cluster_from_load_file():
     print(n_class)
     Num = int(n_class + 1)
     colors = np.array(list(islice(cycle([np.true_divide([55, 126, 184],255), np.true_divide([255, 127, 0],255), np.true_divide([77, 175, 74],255),
-                                             np.true_divide([247, 129, 191],255), np.true_divide([166, 86, 40],255), np.true_divide([152, 78, 163],255),
-                                             np.true_divide([153, 153, 153],255), np.true_divide([228, 26, 28],255), np.true_divide([222, 222, 0],255)]),
+                                             np.true_divide([247, 129, 191],255), np.true_divide([255, 127, 0],255),np.true_divide([153, 153, 153],255),np.true_divide([166, 86, 40],255), np.true_divide([152, 78, 163],255),
+                                             np.true_divide([153, 153, 153],255), np.true_divide([222, 222, 0],255),np.true_divide([228, 26, 28],255), np.true_divide([222, 222, 0],255)]),
                                       int(max(cluster_index) + 1))))
 
     print("color shape: ", colors.shape)
@@ -331,11 +336,11 @@ def plot_cluster_from_load_file():
             pts_idx_list.append(non_ground_indices[idx])
         pts_idx_list = np.reshape(pts_idx_list,(np.asarray(pts_idx_list).shape[0],)).astype(int)
 
-        print("pts_idx_list shape : ",pts_idx_list)
+        print("pts_idx_list shape : ", pts_idx_list)
         np.asarray(pcd.colors)[pts_idx_list[:], :] = colors[n]
     o3d.visualization.draw_geometries([pcd])
 
 
 if __name__ == '__main__':
-    #main2()
-    plot_cluster_from_load_file()
+    main2()
+    #plot_cluster_from_load_file()
