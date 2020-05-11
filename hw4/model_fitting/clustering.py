@@ -6,14 +6,17 @@
 import numpy as np
 import os
 import struct
-from sklearn import cluster, datasets, mixture, neighbors
+#from sklearn import cluster, datasets, mixture, neighbors
 from scipy import spatial
 from itertools import cycle, islice
 import matplotlib.pyplot as plt
 import open3d as o3d
 import sys
-sys.setrecursionlimit(100000) #提高递归层数上限
-from mpl_toolkits.mplot3d import Axes3D
+import resource
+resource.setrlimit(resource.RLIMIT_STACK, (2**29,-1))
+sys.setrecursionlimit(10**6)
+
+#from mpl_toolkits.mplot3d import Axes3D
 
 
 # 功能：从kitti的.bin格式点云文件中读取点云
@@ -88,7 +91,7 @@ def ground_segmentation(data):
     print(data.shape)
     data_idx = np.arange(data.shape[0])
     print("data index :", data_idx.shape)
-    z_filter_arr_idx =  data_idx[data[:,2] < -1.48]
+    z_filter_arr_idx =  data_idx[data[:,2] < -1.5]
     print('z filtered data: ',z_filter_arr_idx.shape)
     print("data_2 shape :", data.shape)
     ground_idx = Ransac(z_filter_arr_idx,data)
@@ -123,50 +126,60 @@ def clustering(data):
     #DBSCAN
     #noise 编号为0
     n_class = 0
-    r = 0.18
-    min_samples = 35
-    bound_samples = 20
+    r = 0.4
+    min_samples = 90 # 与r配合表示密度
+    bound_samples = 6
     idx = np.arange(data.shape[0])
     #nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
     print("data[idx] :", data[idx].shape)
     result = np.zeros(data.shape[0])
-    KDtree = spatial.cKDTree(data[idx],leafsize=8)
+    KDtree = spatial.cKDTree(data[idx])
 
-
-    def DFS(point_idx, neighbor_indices, data, n_class, min_samples, result, r):
+    def DFS(point_idx, neighbor_indices):
         nonlocal idx
+        nonlocal data
+        nonlocal n_recursive
         if (neighbor_indices.shape[0] < bound_samples):
-            dele_idx = np.argwhere(idx == point_idx)
-            dele_idx = np.reshape(dele_idx, 1)
-            idx = np.delete(idx, dele_idx)
+            if (np.argwhere(idx == point_idx)):
+                dele_idx = np.argwhere(idx == point_idx)
+                dele_idx = np.reshape(dele_idx, 1)
+                idx = np.delete(idx, dele_idx)
+                print("idx shape after delete:", idx.shape)
             result[point_idx] = n_class
             return
 
         result[point_idx] = n_class
-        dele_idx = np.argwhere(idx == point_idx)
-        #print("point _idx:", point_idx)
-        dele_idx = np.reshape(dele_idx, 1)
-        #print("dele idx after reshape:", dele_idx)
-        idx = np.delete(idx, dele_idx)
-        #print("idx shape after delete:", idx.shape)
+        if (np.argwhere(idx == point_idx)):
+            dele_idx = np.argwhere(idx == point_idx)
+            # print("point _idx:", point_idx)
+            dele_idx = np.reshape(dele_idx, 1)
+            # print("dele idx after reshape:", dele_idx)
+            idx = np.delete(idx, dele_idx)
+            print("idx shape after delete:", idx.shape)
         # print("DFS neighbor_Indices", neighbor_indices.shape)
         for neighbor_idx in neighbor_indices:
-            if(np.argwhere(idx == neighbor_idx)):
+            if (result[neighbor_idx] == 0):
                 # print("neighbor_idx shape", neighbor_idx
-                #nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
-                #distances, indices = nbrs.radius_neighbors(data[[neighbor_idx]],)
-                #update kdtree
-                indices = np.asarray(KDtree.query_ball_point(data[[neighbor_idx]],r=r)[0])
-                #new_neigh_indices = indices[0][indices[0][:] != neighbor_idx]
+                # nbrs = neighbors.NearestNeighbors(radius=r, algorithm='kd_tree').fit(data[idx])
+                # distances, indices = nbrs.radius_neighbors(data[[neighbor_idx]],)
+                # update kdtree
+                indices = np.asarray(KDtree.query_ball_point(data[[neighbor_idx]], r=r)[0])
+                # new_neigh_indices = indices[0][indices[0][:] != neighbor_idx]
                 new_neigh_indices = indices[indices[:] != neighbor_idx]
-                #print("new_neigh_indices shape: ", new_neigh_indices.shape)
+                # print("new_neigh_indices shape: ", new_neigh_indices.shape)
                 expand_indices = []
                 for expand_idx in new_neigh_indices:
-                    if(np.argwhere(idx == expand_idx)):
+                    if (result[expand_idx] == 0):
                         expand_indices.append(expand_idx)
-                #print("expand_indices shape: ", np.asarray(expand_indices).shape)
-                DFS(neighbor_idx, np.asarray(expand_indices), data, n_class, min_samples, result, r)
+                # print("expand_indices shape: ", np.asarray(expand_indices).shape)
+                n_recursive = n_recursive + 1
+                print("n recursive: ", n_recursive)
+                DFS(neighbor_idx, np.asarray(expand_indices))
+                n_recursive = n_recursive - 1
+                print("n recursive: ", n_recursive)
         return
+
+
 
     while idx.shape[0]:
         #print("idx number is :",idx.shape)
@@ -179,7 +192,7 @@ def clustering(data):
         #找最临近点
         #distances, indices =nbrs.radius_neighbors(data[start_idx])
         indices = np.asarray(KDtree.query_ball_point(data[start_idx], r=r)[0])
-        #rint("distance:",  distances)
+        #print("distance:",  distances)
         print("indices:" , indices.shape)
 
         #if indices[0].shape[0] - 1 < min_samples:
@@ -197,8 +210,10 @@ def clustering(data):
             print("n_class: ", n_class)
             #neigh_indices = indices[0][indices[0][:] != start_idx]
             neigh_indices = indices[indices[:] != start_idx]
-            print("neigh_indices shape:", neigh_indices.shape)
-            DFS(start_idx, neigh_indices, data, n_class, min_samples, result, r)
+            #print("neigh_indices shape:", neigh_indices.shape)
+            n_recursive = 0
+            DFS(start_idx, neigh_indices)
+        print("DFS OVER")
 
 
 
@@ -262,18 +277,18 @@ def plot_clusters_03d(non_ground_indices,segment_points,cluster_index, pcd, n_cl
                                       int(max(cluster_index) + 1))))
 
 
-    print("color shape: ", colors.shape)
+    #print("color shape: ", colors.shape)
     class_indicies_list = []
     for n in range(0, Num):
         class_indicies = np.argwhere(cluster_index == n)
-        print("class_indicies", class_indicies.shape)
+        #print("class_indicies", class_indicies.shape)
 
         pts_idx_list = []
         for idx in class_indicies:
             pts_idx_list.append(non_ground_indices[idx])
         pts_idx_list = np.reshape(pts_idx_list,(np.asarray(pts_idx_list).shape[0],)).astype(int)
 
-        print("pts_idx_list shape : ",pts_idx_list)
+        #print("pts_idx_list shape : ",pts_idx_list)
         np.asarray(pcd.colors)[pts_idx_list[:], :] = colors[n]
     o3d.visualization.draw_geometries([pcd])
 
@@ -325,18 +340,18 @@ def plot_cluster_from_load_file():
                                              np.true_divide([153, 153, 153],255), np.true_divide([222, 222, 0],255),np.true_divide([228, 26, 28],255), np.true_divide([222, 222, 0],255)]),
                                       int(max(cluster_index) + 1))))
 
-    print("color shape: ", colors.shape)
+    #print("color shape: ", colors.shape)
     class_indicies_list = []
     for n in range(0, Num):
         class_indicies = np.argwhere(cluster_index == n)
-        print("class_indicies", class_indicies.shape)
+        #print("class_indicies", class_indicies.shape)
 
         pts_idx_list = []
         for idx in class_indicies:
             pts_idx_list.append(non_ground_indices[idx])
         pts_idx_list = np.reshape(pts_idx_list,(np.asarray(pts_idx_list).shape[0],)).astype(int)
 
-        print("pts_idx_list shape : ", pts_idx_list)
+        #print("pts_idx_list shape : ", pts_idx_list)
         np.asarray(pcd.colors)[pts_idx_list[:], :] = colors[n]
     o3d.visualization.draw_geometries([pcd])
 
