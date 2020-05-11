@@ -11,4 +11,8 @@ handle point cloud
 ## install python package with yml
 - 1.delete version number
 - 2.python -m pip install pip==9.0.3 :solve Modulenotfound:pip.req
->>>>>>> 1c8243f5ee4e0b7d75bf413f0120def944cfe1f3
+
+## hm4 realize clustering with DBSCAN
+- 1. main2() running process clustering
+- 2. plot_cluster_from_load_file: realize visulization dependent on saved file
+
