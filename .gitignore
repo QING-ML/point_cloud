@@ -7,3 +7,4 @@ hw2/build-knn_with_tree-Desktop-Debug/*
 hw2/velodyne
 hw2/knn_with_tree/CMakeLists.txt.user
 hw2/build-knn_with_tree-Desktop-Release/*
+hw4/model_fitting/experiment_data/*
